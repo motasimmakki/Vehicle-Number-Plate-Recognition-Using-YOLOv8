@@ -398,3 +398,20 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+anpr_test/
+sample.mp4
+sort/
+test_interpolated.csv
+test.csv
+out.mp4
+yolov8n.pt
