@@ -1,2 +1,9 @@
 flask
 python-dotenv
+ultralytics==8.0.114
+pandas
+opencv-python
+numpy
+scipy
+easyocr
+filterpy
