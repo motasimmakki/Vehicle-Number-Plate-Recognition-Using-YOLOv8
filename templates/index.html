@@ -1,0 +1,125 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+    <title>Flask App</title>
+</head>
+<body>
+    <h1>Hello FLask!</h1>
+    <h3>This is coming from the template!</h3>
+</body>
+</html> -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>License Plate Recognition</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>License Plate Recognition</h1>
+        
+        <div class="main-content">
+            <!-- Video Display -->
+            <div>
+                <video id="videoPlayer" controls></video>
+            </div>
+
+            <!-- Recognized Plates -->
+            <div class="plates-container">
+                <h3>List of Plates (Recognized)</h3>
+                <ul id="platesList"></ul>
+            </div>
+        </div>
+
+        <!-- Buttons Section -->
+        <div class="buttons">
+            <input type="file" id="videoFile">
+            <button id="uploadBtn">Upload</button>
+            <button id="testBtn">Test</button>
+            <button id="downloadBtn">Download</button>
+        </div>
+    </div>
+
+    <script>
+        let uploadedVideoPath = "";
+
+        // Handle Upload
+        $("#uploadBtn").on("click", function () {
+            const fileInput = $("#videoFile")[0].files[0];
+            if (!fileInput) {
+                alert("Please select a video file to upload.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("file", fileInput);
+
+            $.ajax({
+                url: "/upload",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    if (response.file_path) {
+                        uploadedVideoPath = response.file_path;
+
+                        // Set the video source and play it
+                        const videoPlayer = $("#videoPlayer");
+                        videoPlayer.attr("src", uploadedVideoPath);
+                        videoPlayer[0].load();
+                        videoPlayer[0].play();
+
+                        alert("File uploaded successfully and video is playing.");
+                    }
+                },
+                error: function () {
+                    alert("Failed to upload file.");
+                },
+            });
+        });
+
+        // Handle Test
+        $("#testBtn").on("click", function () {
+            if (!uploadedVideoPath) {
+                alert("Please upload a video first.");
+                return;
+            }
+
+            $.ajax({
+                url: "/test",
+                type: "POST",
+                data: { video_path: uploadedVideoPath },
+                success: function (response) {
+                    const platesList = $("#platesList");
+                    platesList.empty(); // Clear the current list
+
+                    if (response.recognized_plates && response.recognized_plates.length > 0) {
+                        response.recognized_plates.forEach(function (plate) {
+                            platesList.append(`<li>${plate}</li>`);
+                        });
+                    } else {
+                        platesList.append("<li>No plates recognized.</li>");
+                    }
+                },
+                error: function () {
+                    alert("Failed to run model. Check your server logs for details.");
+                },
+            });
+        });
+
+
+        // Handle Download
+        $("#downloadBtn").on("click", function () {
+            window.location.href = "/download";
+        });
+    </script>
+</body>
+</html>
