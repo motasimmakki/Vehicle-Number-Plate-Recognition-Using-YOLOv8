@@ -27,9 +27,27 @@ def draw_border(img, top_left, bottom_right, color=(0, 255, 0), thickness=10, li
 
 results = pd.read_csv('./test_interpolated.csv')
 
-# load video
-video_path = './uploads/sample.mp4'
-cap = cv2.VideoCapture(video_path)
+# # load video
+# video_path = './uploads/sample.mp4'
+# cap = cv2.VideoCapture(video_path)
+
+# Path to the 'uploads' folder
+uploads_folder = './uploads'
+# Ensure the 'uploads' folder is not empty
+if not os.listdir(uploads_folder):
+    raise FileNotFoundError("The 'uploads' folder is empty. Please add files to it.")
+# Get the latest file from the 'uploads' folder
+latest_file = max(
+    [os.path.join(uploads_folder, f) for f in os.listdir(uploads_folder)],
+    key=os.path.getmtime
+)
+# Extract the filename of the latest file
+latest_filename = os.path.basename(latest_file)
+# Open the latest file using cv2.VideoCapture
+cap = cv2.VideoCapture(latest_file)
+
+# Extract the filename without extension
+latest_filename_without_ext = os.path.splitext(latest_filename)[0]
 
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Specify the codec
 fps = cap.get(cv2.CAP_PROP_FPS)
@@ -40,7 +58,7 @@ height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 # Ensure the 'outputs' directory exists
 os.makedirs('outputs', exist_ok=True)
 # Save the video file in the 'outputs' folder
-out = cv2.VideoWriter('./outputs/out.mp4', fourcc, fps, (width, height))
+out = cv2.VideoWriter('./outputs/'+latest_filename_without_ext+'_out.mp4', fourcc, fps, (width, height))
 
 license_plate = {}
 for car_id in np.unique(results['car_id']):

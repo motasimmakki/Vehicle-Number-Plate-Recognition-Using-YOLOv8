@@ -14,8 +14,23 @@ mot_tracker = Sort()
 coco_model = YOLO('yolov8n.pt')
 license_plate_detector = YOLO('license_plate_detector.pt')
 
-# load video
-cap = cv2.VideoCapture('./uploads/sample.mp4')
+# # load video
+# cap = cv2.VideoCapture('./uploads/sample.mp4')
+
+# Path to the 'uploads' folder
+uploads_folder = './uploads'
+# Ensure the 'uploads' folder is not empty
+if not os.listdir(uploads_folder):
+    raise FileNotFoundError("The 'uploads' folder is empty. Please add files to it.")
+# Get the latest file from the 'uploads' folder
+latest_file = max(
+    [os.path.join(uploads_folder, f) for f in os.listdir(uploads_folder)],
+    key=os.path.getmtime
+)
+# Extract the filename of the latest file
+latest_filename = os.path.basename(latest_file)
+# Open the latest file using cv2.VideoCapture
+cap = cv2.VideoCapture(latest_file)
 
 vehicles = [2, 3, 5, 7]
 
