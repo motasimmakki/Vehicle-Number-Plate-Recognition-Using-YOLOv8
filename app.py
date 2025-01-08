@@ -13,6 +13,7 @@
 
 from flask import Flask, render_template, request, jsonify, send_file, send_from_directory, session
 import os
+import subprocess
 
 app = Flask(__name__)
 UPLOAD_FOLDER = "uploads"
@@ -23,9 +24,36 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 app.secret_key = "your_secret_key"  # Required for session usage
 
-# Dummy function for deep learning model
+# # Dummy function for deep learning model
+# def run_deep_learning_model(video_path):
+#     return ["ABC123", "XYZ789", "LMN456", "UP113899"]
+
 def run_deep_learning_model(video_path):
+    # Path to the other environment's Python interpreter
+    other_env_python = "./model-env/python"
+    try:
+        # Run Script 1
+        subprocess.run(
+            [other_env_python, "main.py", video_path],
+            check=True,
+        )
+        # Run Script 2
+        subprocess.run(
+            [other_env_python, "add_missing_data.py", video_path],
+            check=True,
+        )
+        # Run Script 3
+        subprocess.run(
+            [other_env_python, "visualize.py", video_path],
+            check=True,
+        )
+    except subprocess.CalledProcessError as e:
+        print(f"Error occurred while running the scripts: {e}")
+        return []
+
+    # Return recognized plates (dummy example)
     return ["ABC123", "XYZ789", "LMN456", "UP113899"]
+
 
 @app.route("/")
 def index():

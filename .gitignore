@@ -164,6 +164,7 @@ anpr_test/
 sample.mp4
 sort/
 uploads/
+outputs/
 test_interpolated.csv
 test.csv
 out.mp4
