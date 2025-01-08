@@ -29,22 +29,21 @@ app.secret_key = "your_secret_key"  # Required for session usage
 #     return ["ABC123", "XYZ789", "LMN456", "UP113899"]
 
 def run_deep_learning_model(video_path):
-    # Path to the other environment's Python interpreter
-    other_env_python = "./model-env/python"
+    curr_env = "python"
     try:
         # Run Script 1
         subprocess.run(
-            [other_env_python, "main.py", video_path],
+            [curr_env, "main.py", video_path],
             check=True,
         )
         # Run Script 2
         subprocess.run(
-            [other_env_python, "add_missing_data.py", video_path],
+            [curr_env, "add_missing_data.py", video_path],
             check=True,
         )
         # Run Script 3
         subprocess.run(
-            [other_env_python, "visualize.py", video_path],
+            [curr_env, "visualize.py", video_path],
             check=True,
         )
     except subprocess.CalledProcessError as e:
