@@ -1,3 +1,4 @@
+import os
 import csv
 import numpy as np
 from scipy.interpolate import interp1d
@@ -76,9 +77,28 @@ def interpolate_bounding_boxes(data):
 
     return interpolated_data
 
+# Path to the 'tests' folder
+tests_folder = './tests'
+# Ensure the 'tests' folder is not empty
+if not os.listdir(tests_folder):
+    raise FileNotFoundError("The 'tests' folder is empty. Please add files to it.")
+# Get the latest file from the 'tests' folder
+latest_file = max(
+    [os.path.join(tests_folder, f) for f in os.listdir(tests_folder)],
+    key=os.path.getmtime
+)
+# Extract the filename of the latest file
+latest_filename = os.path.basename(latest_file)
+# Extract the filename without extension
+latest_filename_without_ext = os.path.splitext(latest_filename)[0]
+
+# # Load the CSV file
+# with open('test.csv', 'r') as file:
+#     reader = csv.DictReader(file)
+#     data = list(reader)
 
 # Load the CSV file
-with open('test.csv', 'r') as file:
+with open('./tests/'+latest_filename_without_ext+'.csv', 'r') as file:
     reader = csv.DictReader(file)
     data = list(reader)
 
@@ -87,7 +107,7 @@ interpolated_data = interpolate_bounding_boxes(data)
 
 # Write updated data to a new CSV file
 header = ['frame_nmr', 'car_id', 'car_bbox', 'license_plate_bbox', 'license_plate_bbox_score', 'license_number', 'license_number_score']
-with open('test_interpolated.csv', 'w', newline='') as file:
+with open('./tests/'+latest_filename_without_ext+'_interpolated.csv', 'w', newline='') as file:
     writer = csv.DictWriter(file, fieldnames=header)
     writer.writeheader()
     writer.writerows(interpolated_data)

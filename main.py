@@ -29,6 +29,8 @@ latest_file = max(
 )
 # Extract the filename of the latest file
 latest_filename = os.path.basename(latest_file)
+# Extract the filename without extension
+latest_filename_without_ext = os.path.splitext(latest_filename)[0]
 # Open the latest file using cv2.VideoCapture
 cap = cv2.VideoCapture(latest_file)
 
@@ -80,5 +82,9 @@ while ret:
                                                                     'bbox_score': score,
                                                                     'text_score': license_plate_text_score}}
 
+# write_csv(results, './test.csv')
+
+# Ensure the 'tests' directory exists
+os.makedirs('tests', exist_ok=True)
 # write results
-write_csv(results, './test.csv')
+write_csv(results, './tests/'+latest_filename_without_ext+'.csv')

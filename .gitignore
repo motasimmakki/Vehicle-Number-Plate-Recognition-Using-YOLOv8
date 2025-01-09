@@ -165,6 +165,8 @@ sample.mp4
 sort/
 uploads/
 outputs/
+Sample Test Clips/
+tests/
 test_interpolated.csv
 test.csv
 out.mp4

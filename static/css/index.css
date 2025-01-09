@@ -20,7 +20,7 @@ h1 {
 
 /* Container for the layout */
 .container {
-    max-width: 900px;
+    max-width: 1000px;
     margin: 20px auto;
     background: #fff;
     padding: 20px;

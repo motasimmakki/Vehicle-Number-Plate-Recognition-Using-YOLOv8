@@ -28,13 +28,18 @@
         <div class="main-content">
             <!-- Video Display -->
             <div>
-                <video id="videoPlayer" controls></video>
+                <video id="videoPlayer1" controls></video>
             </div>
 
             <!-- Recognized Plates -->
             <div class="plates-container">
                 <h3>List of Plates (Recognized)</h3>
                 <ul id="platesList"></ul>
+            </div>
+
+            <!-- Video Display -->
+            <div>
+                <video id="videoPlayer2" controls></video>
             </div>
         </div>
 
@@ -72,10 +77,10 @@
                         uploadedVideoPath = response.file_path;
 
                         // Set the video source and play it
-                        const videoPlayer = $("#videoPlayer");
-                        videoPlayer.attr("src", uploadedVideoPath);
-                        videoPlayer[0].load();
-                        videoPlayer[0].play();
+                        const videoPlayer1 = $("#videoPlayer1");
+                        videoPlayer1.attr("src", uploadedVideoPath);
+                        videoPlayer1[0].load();
+                        videoPlayer1[0].play();
 
                         alert("File uploaded successfully and video is playing.");
                     }
