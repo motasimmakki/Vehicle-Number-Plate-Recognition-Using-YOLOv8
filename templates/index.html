@@ -1,17 +1,3 @@
-<!-- <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
-    <title>Flask App</title>
-</head>
-<body>
-    <h1>Hello FLask!</h1>
-    <h3>This is coming from the template!</h3>
-</body>
-</html> -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -28,7 +14,9 @@
         <div class="main-content">
             <!-- Video Display -->
             <div>
-                <video id="videoPlayer1" controls></video>
+                <video id="videoPlayer1" controls muted loop></video>
+                <!-- Showing Recording -->
+                <video id="cameraPreview" autoplay></video>
             </div>
 
             <!-- Recognized Plates -->
@@ -37,10 +25,12 @@
                 <ul id="platesList"></ul>
             </div>
 
-            <!-- Video Display -->
+            <!-- Video Display
             <div>
-                <video id="videoPlayer2" controls></video>
-            </div>
+                <video id="videoPlayer2" controls muted loop>
+                    <source type="video/mp4">
+                </video>
+            </div> -->
         </div>
 
         <!-- Buttons Section -->
@@ -49,11 +39,23 @@
             <button id="uploadBtn">Upload</button>
             <button id="testBtn">Test</button>
             <button id="downloadBtn">Download</button>
+            
+            <button id="startRecordingBtn">Start Recording</button>
+            <button id="stopRecordingBtn" disabled>Stop Recording</button>
         </div>
     </div>
 
     <script>
         let uploadedVideoPath = "";
+        let uploadedFileName = ""; // Variable to store the file name
+        // let searchInterval; // Variable to store the interval ID
+        const baseUrl = "{{ base_url }}";
+
+        // Video Recording Variables
+        let mediaRecorder;
+        let recordedChunks = [];
+        const cameraPreview = document.getElementById("cameraPreview");
+        const videoPlayer1 = document.getElementById("videoPlayer1");
 
         // Handle Upload
         $("#uploadBtn").on("click", function () {
@@ -62,6 +64,9 @@
                 alert("Please select a video file to upload.");
                 return;
             }
+
+            // Extract the filename
+            uploadedFileName = fileInput.name;
 
             const formData = new FormData();
             formData.append("file", fileInput);
@@ -82,7 +87,9 @@
                         videoPlayer1[0].load();
                         videoPlayer1[0].play();
 
-                        alert("File uploaded successfully and video is playing.");
+                        // Show the filename in an alert or log it
+                        alert(`File uploaded successfully: ${uploadedFileName}`);
+                        console.log(`Uploaded file: ${uploadedFileName}`);
                     }
                 },
                 error: function () {
@@ -90,6 +97,39 @@
                 },
             });
         });
+
+        // // Function to check if the video exists and play it
+        // const continuouslyCheckAndPlayVideo = (videoName) => {
+        // const searchInterval = setInterval(() => {
+        //     $.ajax({
+        //         url: "/check-video",
+        //         type: "POST",
+        //         contentType: "application/json", // Send JSON
+        //         data: JSON.stringify({ video_name: videoName }), // Convert to JSON string
+        //         success: function (response) {
+        //             if (response.exists) {
+        //                 clearInterval(searchInterval); // Stop checking
+
+        //                 const videoPlayer2 = $("#videoPlayer2");
+        //                 const videoPlayer2Source = $("#videoPlayer2 source");
+        //                 // Use the base URL passed from Flask and dynamically append the videoName
+        //                 const videoUrl = baseUrl + encodeURIComponent(videoName);
+        //                 console.log(videoUrl + " +++ ")
+        //                 videoPlayer2Source.attr("src", videoUrl);
+        //                 // videoPlayer2Source.attr("src", videoName); // Use correct path
+        //                 // videoPlayer2.attr("src", response.video_path); // Use correct path
+        //                 videoPlayer2[0].load();
+        //                 videoPlayer2[0].play();
+
+        //                 alert(`Video found: ${videoName} is playing now.`);
+        //             }
+        //         },
+        //         error: function () {
+        //             console.error("Error checking video existence.");
+        //         },
+        //     });
+        // }, 2000); // Check every 2 seconds
+        // };
 
         // Handle Test
         $("#testBtn").on("click", function () {
@@ -118,12 +158,76 @@
                     alert("Failed to run model. Check your server logs for details.");
                 },
             });
-        });
 
+            // // Start searching for the video
+            // // alert(uploadedFileName);
+            // uploadedFileName = uploadedFileName.split('.').slice(0, -1).join('.'); // Remove the extension
+            // const targetVideoName = uploadedFileName+"_out.mp4";
+            // // alert(targetVideoName);
+            // continuouslyCheckAndPlayVideo(targetVideoName);
+        });
 
         // Handle Download
         $("#downloadBtn").on("click", function () {
             window.location.href = "/download";
+        });
+
+        // Start Recording
+        $("#startRecordingBtn").on("click", async function () {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                cameraPreview.srcObject = stream;
+
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.ondataavailable = function (event) {
+                    if (event.data.size > 0) {
+                        recordedChunks.push(event.data);
+                    }
+                };
+
+                mediaRecorder.onstop = async function () {
+                    const blob = new Blob(recordedChunks, { type: "video/webm" });
+                    const formData = new FormData();
+                    formData.append("file", blob, "recording.webm");
+
+                    // Save the file on the server
+                    $.ajax({
+                        url: "/save-recording",
+                        type: "POST",
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function (response) {
+                            if (response.file_path) {
+                                videoPlayer1.src = response.file_path;
+                                videoPlayer1.load();
+                                videoPlayer1.play();
+                                alert("Recording saved successfully.");
+                            }
+                        },
+                        error: function () {
+                            alert("Failed to save the recording.");
+                        }
+                    });
+                };
+
+                mediaRecorder.start();
+                $("#startRecordingBtn").prop("disabled", true);
+                $("#stopRecordingBtn").prop("disabled", false);
+            } catch (error) {
+                console.error("Error accessing camera:", error);
+                alert("Could not start camera.");
+            }
+        });
+
+        // Stop Recording
+        $("#stopRecordingBtn").on("click", function () {
+            mediaRecorder.stop();
+            const stream = cameraPreview.srcObject;
+            stream.getTracks().forEach(track => track.stop());
+
+            $("#startRecordingBtn").prop("disabled", false);
+            $("#stopRecordingBtn").prop("disabled", true);
         });
     </script>
 </body>

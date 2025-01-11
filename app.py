@@ -11,7 +11,7 @@
 #     # Set to False later on.
 #     app.run(debug=True)
 
-from flask import Flask, render_template, request, jsonify, send_file, send_from_directory, session
+from flask import Flask, render_template, request, jsonify, send_file, send_from_directory, session, url_for
 import os
 import subprocess
 
@@ -53,10 +53,17 @@ def run_deep_learning_model(video_path):
     # Return recognized plates (dummy example)
     return ["ABC123", "XYZ789", "LMN456", "UP113899"]
 
+# Serve the 'outputs' folder as static
+@app.route('/outputs/<path:filename>')
+def serve_output_file(filename):
+    # print(f"Serving video: {filename}")
+    return send_from_directory('outputs', filename, mimetype='video/mp4')
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    base_url = url_for('serve_output_file', filename='')  # Get the base URL for the route
+    return render_template('index.html', base_url=base_url)
+    # return render_template("index.html")
 
 @app.route("/upload", methods=["POST"])
 def upload_file():
@@ -103,6 +110,29 @@ def download_results():
     # Send the file for download
     return send_file(result_file, as_attachment=True)
 
+# @app.route('/check-video', methods=['POST'])
+# def check_video():
+#     data = request.json  # Get JSON data from the POST request
+#     video_name = data.get('video_name', '')  # Extract video name
+#     video_path = os.path.join('outputs/', video_name)  # Use correct folder
+#     # print(video_path + " +++ ")
+
+#     if os.path.exists(video_path):  # Check if the video exists
+#         return jsonify({'exists': True, 'file_path': video_path})  # Return the filename
+#     else:
+#         return jsonify({'exists': False})
+
+@app.route('/save-recording', methods=['POST'])
+def save_recording():
+    if 'file' not in request.files:
+        return jsonify({"error": "No file uploaded"}), 400
+
+    file = request.files['file']
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+    file.save(file_path)
+
+    return jsonify({"file_path": f"/uploads/{file.filename}"}), 200
+    
 if __name__ == "__main__":
     app.run(debug=True)
 
